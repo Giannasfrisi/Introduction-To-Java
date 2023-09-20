@@ -4,9 +4,11 @@
  * Computer Science 112
  *
  * Modifications and additions by:
- *     name: gianna sfrisi
- *     username: gsfrisi@bu.edu
+ *     name: gianna sfrisi and ellis hamilton 
+ *     username: gfrisi@bu.edu and ellisgham@bu.edu
  */
+
+import java.util.*;
 
 /*
  * LinkedTree - a class that represents a binary tree containing data
@@ -20,6 +22,7 @@ public class LinkedTree {
         private LLList data;     // list of data values for this key
         private Node left;       // reference to the left child/subtree
         private Node right;      // reference to the right child/subtree
+        private Node parent;     // reference to the parent. NOT YET MAINTAINED!
         
         private Node(int key, Object data){
             this.key = key;
@@ -27,6 +30,7 @@ public class LinkedTree {
             this.data.addItem(data, 0);
             this.left = null;
             this.right = null;
+            this.parent = null;
         }
     }
     
@@ -35,12 +39,12 @@ public class LinkedTree {
     
     public LinkedTree() {
         root = null;
+         
     }
     
     /*
-     * Prints the keys of the tree in the order given by a preorder
-     * traversal.  Invokes the recursive preorderPrintTree method to
-     * do the work.
+     * Prints the keys of the tree in the order given by a preorder traversal.
+     * Invokes the recursive preorderPrintTree method to do the work.
      */
     public void preorderPrint() {
         if (root != null) {
@@ -66,9 +70,8 @@ public class LinkedTree {
     }
     
     /*
-     * Prints the keys of the tree in the order given by a postorder
-     * traversal.  Invokes the recursive postorderPrintTree method to
-     * do the work.
+     * Prints the keys of the tree in the order given by a postorder traversal.
+     * Invokes the recursive postorderPrintTree method to do the work.
      */
     public void postorderPrint() {
         if (root != null) {
@@ -94,9 +97,8 @@ public class LinkedTree {
     }
     
     /*
-     * Prints the keys of the tree in the order given by an inorder
-     * traversal.  Invokes the recursive inorderPrintTree method to do
-     * the work.
+     * Prints the keys of the tree in the order given by an inorder traversal.
+     * Invokes the recursive inorderPrintTree method to do the work.
      */
     public void inorderPrint() {
         if (root != null) {
@@ -174,10 +176,9 @@ public class LinkedTree {
     }
     
     /*
-     * Searches for the specified key in the tree.  If it finds it, it
-     * returns the list of data items associated with the key.
-     * Invokes the recursive searchTree method to perform the actual
-     * search.
+     * Searches for the specified key in the tree.
+     * If it finds it, it returns the list of data items associated with the key.
+     * Invokes the recursive searchTree method to perform the actual search.
      */
     public LLList search(int key) {
         Node n = searchTree(root, key);
@@ -228,6 +229,7 @@ public class LinkedTree {
         
         // Insert the new node.
         Node newNode = new Node(key, data);
+        newNode.parent = parent; 
         if (parent == null) {    // the tree was empty
             root = newNode;
         } else if (key < parent.key) {
@@ -237,84 +239,6 @@ public class LinkedTree {
         }
     }
     
-    //new methods 
-
-    public int sumKeysTo(int key){
-        int sum = 0;
-
-        if (search(key) == null){
-            return 0;
-        }
-
-        else if (key==root.key){
-            return root.key;
-        }
-        
-        else{
-        sum += key; 
-        sum += root.key;
-        Node trav = root;
-        while (trav != null && trav.key != key){
-            sum += key;
-            if(key < trav.key){
-                trav = trav.left;
-            }
-            else {
-                trav= trav.right; 
-            }
-        }
-        return sum; 
-    }
-    }
-
-    private static int numLeafNodesInTree(Node object){
-        int amount = 0;
-     
-        if (object == null){
-            return 0;
-        }
-
-        if (object.left != null){
-            amount ++;
-            return numLeafNodesInTree(object.left);
-        }
-
-        if (object.right != null){
-            amount ++;
-            return numLeafNodesInTree(object.right);
-        }
-        return amount; 
-    }
-
-    public int numLeafNodes(){
-        int amount =  numLeafNodesInTree(root);
-        return amount;
-    }
-
-
-    public int deleteSmallest(){
-        int indexofKey = -1;
-        if (root == null){
-            return -1; 
-        }
-        Node trav = root;
-        while (trav != null){
-            if (trav.left != null && trav.key > trav.left.key){
-                trav = trav.left;
-            }
-        indexofKey = trav.key; 
-
-        if (trav.right == null){
-            trav = null; 
-        }
-
-        else{
-            trav = trav.right;
-        }
-        }
-
-        return indexofKey;
-    }
     /*
      * FOR TESTING: Processes the integer keys in the specified array from 
      * left to right, adding a node for each of them to the tree. 
@@ -375,6 +299,7 @@ public class LinkedTree {
             // replacement item.
             toDelete.key = replace.key;
             toDelete.data = replace.data;
+            toDelete.parent= replace.parent; //is this right? 
             
             // Recursively delete the replacement item's old node.
             // It has at most one child, so we don't have to
@@ -386,7 +311,7 @@ public class LinkedTree {
             if (toDelete.left != null) {
                 toDeleteChild = toDelete.left;
             } else {
-                toDeleteChild = toDelete.right;  // null if no children
+                toDeleteChild = toDelete.right;  // null if it has no children
             }
             
             if (toDelete == root) {
@@ -398,111 +323,168 @@ public class LinkedTree {
             }
         }
     }
+
+    /*
+     * PS 8: Problem 1
+     * public "wrapper" method that makes the initial call 
+     * to the recursive method for testing if there are any
+     * keys greater than v in the tree.
+     */
+    public boolean anyGreater(int v) {
+        // make the first call to the recursive method,
+        // passing in the root of the tree as a whole
+        return anyGreaterInTree(root, v);
+    }
+    
+    /*
+     * PS 8: Problem 1
+     * Initial recursive method for testing if there are any
+     * keys greater than v in the tree.
+     * 
+     * In problem 1.3, you will revise this to take advantage
+     * of the fact that the tree is a binary search tree.
+     */
+    private static boolean anyGreaterInTree(Node root, int v) {
+        if (root == null) {    
+            return false;
+        } else {
+            boolean anyGreaterInLeft = anyGreaterInTree(root.left, v);
+            boolean anyGreaterInRight = anyGreaterInTree(root.right, v);
+            return (root.key > v || anyGreaterInLeft || anyGreaterInRight);
+        }
+    }    
+    
+    /* Returns a preorder iterator for this tree. */
+    public LinkedTreeIterator preorderIterator() {
+        return new PreorderIterator();
+    }
+    
+    /* 
+     * inner class for a preorder iterator 
+     * IMPORTANT: You will not be able to actually use objects from this class
+     * to perform a preorder iteration until you have modified the LinkedTree
+     * methods so that they maintain the parent fields in the Nodes.
+     */
+    private class PreorderIterator implements LinkedTreeIterator {
+        private Node nextNode;
+        
+        private PreorderIterator() {
+            // The traversal starts with the root node.
+            nextNode = root;
+        }
+        
+        public boolean hasNext() {
+            return (nextNode != null);
+        }
+        
+        public int next() {
+            if (nextNode == null) {
+                throw new NoSuchElementException();
+            }
+            
+            // Store a copy of the key to be returned.
+            int key = nextNode.key;
+            
+            // Advance nextNode.
+            if (nextNode.left != null) {
+                nextNode = nextNode.left;
+            } else if (nextNode.right != null) {
+                nextNode = nextNode.right;
+            } else {
+                // We've just visited a leaf node.
+                // Go back up the tree until we find a node
+                // with a right child that we haven't seen yet.
+                Node parent = nextNode.parent;
+                Node child = nextNode;
+                while (parent != null &&
+                       (parent.right == child || parent.right == null)) {
+                    child = parent;
+                    parent = parent.parent;
+                }
+                
+                if (parent == null) {
+                    nextNode = null;  // the traversal is complete
+                } else {
+                    nextNode = parent.right;
+                }
+            }
+            
+            return key;
+        }
+    }   
+    
+    // new code 
+
+    private class InorderIterator implements LinkedTreeIterator{
+            private Node nextNode; 
+        public InorderIterator(){
+            Node trav = root; 
+            while (trav!=null){
+            if (trav.left == null){
+                nextNode=trav;
+                break;   
+            } else{
+                trav=trav.left; 
+            }
+            nextNode = trav;
+            }
+        }
+
+        public boolean hasNext(){
+            return (nextNode != null);
+        }
+
+        public int next(){
+            if (nextNode == null) {
+                throw new NoSuchElementException();
+            }
+            int key = nextNode.key; 
+            if (nextNode.right != null){
+                nextNode = nextNode.right;
+            } else {
+                Node parent = nextNode.parent; 
+                Node child = nextNode; 
+                while (parent != null && (child == parent.right || parent.right==null)){
+                    child = parent; 
+                    parent = parent.parent; 
+                }
+                if (parent ==null){
+                    nextNode = null;
+                } else {
+                    nextNode= parent;
+                }    
+            }
+            
+            return key; 
+        }
+        }
+    public LinkedTreeIterator inorderIterator(){ 
+            return new InorderIterator(); 
+        }
     
     public static void main(String[] args) {
-        /*
-         * Add at least two unit tests for each method that you write.
-         * Test a variety of different cases. 
-         * Follow the same format that we used in the previous problem.
-         * We have given you some preliminary code for the first test below.
-         */
-
-        System.out.println("--- Testing sumKeysTo ---");
-        System.out.println();
-        System.out.println("(1) Testing on tree from Problem 6, and (2) another random list of numbers");
-        try {
-            LinkedTree tree = new LinkedTree();
-            int[] keys = {37, 26, 42, 13, 35, 56, 30, 47, 70};
-            tree.insertKeys(keys);
-
-	    // add the rest of the test here
-        LinkedTree tree2 = new LinkedTree();
-        int[] keys2 = {36, 25, 41, 9, 35, 53, 30, 47, 90};
-        tree2.insertKeys(keys2);
-        } catch (Exception e) {
-            System.out.println("INCORRECTLY THREW AN EXCEPTION: " + e);
-        }
-                           
-        System.out.println();    // include a blank line between tests
-
-        // Put your other tests below.
-        
-        //deleteSmallest
-        System.out.println("--- Testing deleteSmallest ---");
-        System.out.println();
-        System.out.println("(1) Testing '36, 25, 41, 9, 35, 53, 30, 47, 90' ");
+        /** Add your test code here **/
+        //test one 
         LinkedTree tree1 = new LinkedTree();
-System.out.println("empty tree: " + tree1.deleteSmallest());
-System.out.println();
-
-int[] keys1 = {36, 25, 41, 9, 35, 53, 30, 47, 90};
-tree1.insertKeys(keys1);
-tree1.levelOrderPrint();
-System.out.println();
-
-System.out.println("first deletion: " + tree1.deleteSmallest());
-tree1.levelOrderPrint();
-System.out.println();
-
-System.out.println("second deletion: " + tree1.deleteSmallest());
-tree1.levelOrderPrint();
-
-System.out.println();
-
-System.out.println("(2) Testing '33, 22, 38, 9, 32, 50, 27, 44, 92' ");
+        int[] keys1 = {7,9,8,6,4,5,2}; 
+        tree1.insertKeys(keys1);
+        LinkedTreeIterator iter1 = tree1.inorderIterator();
+        System.out.println("begin tree 1");
+        while (iter1.hasNext()) {
+            int key = iter1.next();
+            System.out.println(key);  
+        }
+        //test two
         LinkedTree tree2 = new LinkedTree();
-System.out.println("empty tree: " + tree2.deleteSmallest());
-System.out.println();
+        int[] keys = {26,12,32,38,4,18,7}; 
+        tree2.insertKeys(keys);
+        LinkedTreeIterator iter2 = tree2.inorderIterator();
+        System.out.println("begin tree 2");
+        while (iter2.hasNext()) {
+            int key = iter2.next();
+            System.out.println(key);
 
-int[] keys2 = {33, 22, 38, 9, 32, 50, 27, 44, 92};
-tree2.insertKeys(keys2);
-tree2.levelOrderPrint();
-System.out.println();
-
-System.out.println("first deletion: " + tree2.deleteSmallest());
-tree2.levelOrderPrint();
-System.out.println();
-
-System.out.println("second deletion: " + tree2.deleteSmallest());
-tree2.levelOrderPrint();
-System.out.println();
-
-//numLeafNodes
-
-System.out.println("--- Testing numLeafNodes ---");
-System.out.println();
-System.out.println("(1) Testing '36, 25, 41, 9, 35, 53, 30, 47, 90' ");
-LinkedTree tree3 = new LinkedTree();
-System.out.println(tree3.numLeafNodes());
-
-int[] keys3 = {37, 26, 42, 13, 35, 56, 30, 47, 70};
-tree3.insertKeys(keys3);
-System.out.println(tree3.numLeafNodes());
-
-System.out.println();
-
-System.out.println("--- Testing numLeafNodes ---");
-System.out.println();
-System.out.println("(2) Testing '46, 35, 51, 19, 45, 63, 40, 57, 99' ");
-LinkedTree tree4 = new LinkedTree();
-System.out.println(tree4.numLeafNodes());
-
-int[] keys4 = {46, 35, 51, 19, 45, 63, 40, 57, 99};
-tree4.insertKeys(keys4);
-System.out.println(tree4.numLeafNodes());
-
-        //sumToKeys
-        LinkedTree tree = new LinkedTree();
-System.out.println("for an empty tree: " + tree.sumKeysTo(13));
-
-int[] keys = {37, 26, 42, 13, 35, 56, 30, 47, 70};
-tree.insertKeys(keys);
-
-System.out.println("\nfor the tree from problem 6:");
-System.out.println("sum to 13 = " + tree.sumKeysTo(13));
-System.out.println("sum to 56 = " + tree.sumKeysTo(56));
-System.out.println("sum to 37 = " + tree.sumKeysTo(37));
-System.out.println("sum to 50 = " + tree.sumKeysTo(50));
-
+            
+        }
     }
 }

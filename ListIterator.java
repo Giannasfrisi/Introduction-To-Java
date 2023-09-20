@@ -2,8 +2,6 @@
  * ListIterator.java
  *
  * Computer Science 112, Boston University
- * 
- * You should not change or submit this file.
  */
 
 /*
